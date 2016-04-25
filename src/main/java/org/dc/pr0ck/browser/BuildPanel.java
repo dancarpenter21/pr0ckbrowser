@@ -27,6 +27,11 @@ public class BuildPanel extends JPanel {
 	private String outputFileString = null;
 	private String password = null;
 	private boolean usePassword = false;
+	private boolean ignoreThumbsDb = true;
+	
+	private OnBuildFailureListener failure = null;
+	private OnBuildStartedListener start = null;
+	private OnBuildSuccessListener success = null;
 	
 	public BuildPanel setComponentHeight(int componentHeight) {
 		this.componentHeight = componentHeight;
@@ -56,6 +61,18 @@ public class BuildPanel extends JPanel {
 		add(passwordPane, BorderLayout.SOUTH);
 
 		return this;
+	}
+	
+	public void setBuildStartListener(OnBuildStartedListener l) {
+		start = l;
+	}
+	
+	public void setBuildSuccessListener(OnBuildSuccessListener l) {
+		success = l;
+	}
+	
+	public void setBuildFailedListener(OnBuildFailureListener l) {
+		failure = l;
 	}
 	
 	private JPanel buildRootDirectoryPane() {
@@ -146,7 +163,6 @@ public class BuildPanel extends JPanel {
 				if (usePassword) {
 					password = textField.getText();
 				}
-				System.out.println("password " + password);
 			}
 		});
 
@@ -172,7 +188,11 @@ public class BuildPanel extends JPanel {
 		pane.add(passwordPanel, BorderLayout.NORTH);
 		
 		JPanel ignorePanel = new JPanel();
-		JCheckBox ignoreCheckBox = new JCheckBox("Ignore *.db and similar files");
+		final JCheckBox ignoreCheckBox = new JCheckBox("Ignore *.db and similar files");
+		ignoreCheckBox.setSelected(ignoreThumbsDb);
+		ignoreCheckBox.addActionListener((ActionEvent e) -> {
+			ignoreThumbsDb = ignoreCheckBox.isSelected();
+		});
 		ignorePanel.add(ignoreCheckBox);
 		
 		JButton buildButton = new JButton("Build");
@@ -199,9 +219,19 @@ public class BuildPanel extends JPanel {
 
 			new Thread(() -> {
 				try {
-					ProckUtils.makeProck(rootDirectoryString, outputFileString, password);
+					if (start != null) {
+						start.onStart();
+					}
+
+					ProckUtils.makeProck(rootDirectoryString, outputFileString, password, ignoreThumbsDb);
+
+					if (success != null) {
+						success.onSuccess();
+					}
 				} catch (Exception e1) {
-					e1.printStackTrace();
+					if (failure != null) {
+						failure.onFailure(e1);
+					}
 				}
 			}).start();
 		});

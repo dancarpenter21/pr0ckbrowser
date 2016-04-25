@@ -11,7 +11,7 @@ import org.dc.pr0ck.ProckException;
 
 public class ProckUtils {
 
-	public static void makeProck(String rootDirectoryString, String outFileString, String password) throws IOException, ProckException {
+	public static void makeProck(String rootDirectoryString, String outFileString, String password, boolean ignoreTrash) throws IOException, ProckException {
 		try {
 			File sourceDirectory = new File(rootDirectoryString);
 			if (!sourceDirectory.exists() || !sourceDirectory.isDirectory()) {
