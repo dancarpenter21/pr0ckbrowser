@@ -1,6 +1,7 @@
 package org.dc.pr0ck.browser;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -16,6 +17,8 @@ import javax.swing.filechooser.FileFilter;
 import org.jdesktop.xswingx.PromptSupport;
 
 public class BuildPanel extends JPanel {
+	
+	private static Color TEXTFIELD_BGCOLOR_DEFAULT = null;
 
 	private static final long serialVersionUID = -4276800181199724766L;
 	
@@ -78,6 +81,7 @@ public class BuildPanel extends JPanel {
 	private JPanel buildRootDirectoryPane() {
 		JPanel pane = new JPanel();
 		final JTextField textField = new JTextField();
+		TEXTFIELD_BGCOLOR_DEFAULT = textField.getBackground();
 		textField.setPreferredSize(new Dimension(textFieldWidth, componentHeight));
 		PromptSupport.setPrompt("Root directory", textField);
 		PromptSupport.setFocusBehavior(PromptSupport.FocusBehavior.SHOW_PROMPT, textField);
@@ -85,6 +89,11 @@ public class BuildPanel extends JPanel {
 			@Override
 			public void onEvent(DocumentEvent e) {
 				rootDirectoryString = textField.getText();
+				if (ProckUtils.exists(rootDirectoryString) && ProckUtils.isDirectory(rootDirectoryString)) {
+					textField.setBackground(Constants.TEXTFIELD_BGCOLOR_GREEN);
+				} else {
+					textField.setBackground(Constants.TEXTFIELD_BGCOLOR_RED);
+				}
 			}
 		});
 
@@ -115,6 +124,15 @@ public class BuildPanel extends JPanel {
 			@Override
 			public void onEvent(DocumentEvent e) {
 				outputFileString = textField.getText();
+		    	if (ProckUtils.isFilePath(outputFileString)) {
+		    		if (ProckUtils.exists(outputFileString)) {
+						textField.setBackground(Constants.TEXTFIELD_BGCOLOR_YELLOW);
+		    		} else {
+						textField.setBackground(Constants.TEXTFIELD_BGCOLOR_GREEN);
+		    		}
+		    	} else {
+		    		textField.setBackground(Constants.TEXTFIELD_BGCOLOR_RED);
+		    	}
 			}
 		});
 
@@ -124,7 +142,7 @@ public class BuildPanel extends JPanel {
 		button.setPreferredSize(new Dimension(componentWidth, componentHeight));
 		button.addActionListener((ActionEvent e) -> {
 			JFileChooser chooser = new JFileChooser();
-			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 			chooser.setFileFilter(new FileFilter() {
 				@Override
 				public String getDescription() {
@@ -139,7 +157,7 @@ public class BuildPanel extends JPanel {
 
 		    int returnVal = chooser.showOpenDialog(BuildPanel.this);
 		    if(returnVal == JFileChooser.APPROVE_OPTION) {
-		       textField.setText(chooser.getSelectedFile().getAbsolutePath());
+		    	textField.setText(chooser.getSelectedFile().getAbsolutePath());
 		    }	
 		});
 
@@ -153,6 +171,7 @@ public class BuildPanel extends JPanel {
 
 		JPanel passwordPanel = new JPanel();
 		final JTextField textField = new JTextField();
+		final JCheckBox checkBox = new JCheckBox("Password");
 		textField.setPreferredSize(new Dimension(textFieldWidth, componentHeight));
 		PromptSupport.setPrompt("Password", textField);
 		PromptSupport.setFocusBehavior(PromptSupport.FocusBehavior.SHOW_PROMPT, textField);
@@ -162,13 +181,21 @@ public class BuildPanel extends JPanel {
 			public void onEvent(DocumentEvent e) {
 				if (usePassword) {
 					password = textField.getText();
+					if (checkBox.isSelected()) {
+						if (password == null || password.trim().length() == 0) {
+							textField.setBackground(Constants.TEXTFIELD_BGCOLOR_RED);
+						} else {
+							textField.setBackground(Constants.TEXTFIELD_BGCOLOR_GREEN);
+						}
+					} else {
+						textField.setBackground(TEXTFIELD_BGCOLOR_DEFAULT);
+					}
 				}
 			}
 		});
 
 		passwordPanel.add(textField);
 		
-		final JCheckBox checkBox = new JCheckBox("Password");
 		checkBox.setPreferredSize(new Dimension(componentWidth, componentHeight));
 		checkBox.addActionListener((ActionEvent e) -> {
 			if (checkBox.isSelected()) {
@@ -180,6 +207,16 @@ public class BuildPanel extends JPanel {
 				usePassword = false;
 				textField.setText(null);
 				textField.setEnabled(false);
+			}
+
+			if (checkBox.isSelected()) {
+				if (password == null || password.trim().length() == 0) {
+					textField.setBackground(Constants.TEXTFIELD_BGCOLOR_RED);
+				} else {
+					textField.setBackground(Constants.TEXTFIELD_BGCOLOR_GREEN);
+				}
+			} else {
+				textField.setBackground(TEXTFIELD_BGCOLOR_DEFAULT);
 			}
 		});
 		

@@ -32,4 +32,27 @@ public class ProckUtils {
 			throw new ProckException(e);
 		}
 	}
+	
+	/**
+	 * 
+	 * @param pathString string representation of the file path
+	 * @return <code>true</code> iff the supplied String is not a path
+	 * that already exists, and if it exists it's a file and not a directory
+	 */
+	public static boolean isFilePath(String pathString) {
+		File file = new File(pathString);
+		if (file.exists() && file.isDirectory()) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	public static boolean exists(String pathString) {
+		return new File(pathString).exists();
+	}
+
+	public static boolean isDirectory(String pathString) {
+		return new File(pathString).isDirectory();
+	}
 }
